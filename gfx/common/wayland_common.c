@@ -289,6 +289,8 @@ void gfx_ctx_wl_destroy_resources_common(gfx_ctx_wayland_data_t *wl)
       xdg_surface_destroy(wl->xdg_surface);
    if (wl->surface)
       wl_surface_destroy(wl->surface);
+   if (wl->shell_surf)
+      wl_shell_surface_destroy(wl->shell_surf);
 
    if (wl->deco_manager)
       zxdg_decoration_manager_v1_destroy(wl->deco_manager);
@@ -332,6 +334,8 @@ void gfx_ctx_wl_destroy_resources_common(gfx_ctx_wayland_data_t *wl)
       wp_viewporter_destroy(wl->viewporter);
    if (wl->fractional_scale_manager)
       wp_fractional_scale_manager_v1_destroy(wl->fractional_scale_manager);
+   if (wl->shell)
+      wl_shell_destroy(wl->shell);
    if (wl->compositor)
       wl_compositor_destroy(wl->compositor);
    if (wl->registry)
@@ -347,12 +351,14 @@ void gfx_ctx_wl_destroy_resources_common(gfx_ctx_wayland_data_t *wl)
    wl->registry                 = NULL;
    wl->compositor               = NULL;
    wl->shm                      = NULL;
+   wl->shell                    = NULL;
    wl->data_device_manager      = NULL;
    wl->xdg_shell                = NULL;
    wl->seat                     = NULL;
    wl->relative_pointer_manager = NULL;
    wl->pointer_constraints      = NULL;
    wl->idle_inhibit_manager     = NULL;
+   wl->shell_surf               = NULL;
    wl->deco_manager             = NULL;
    wl->surface                  = NULL;
    wl->xdg_surface              = NULL;
@@ -394,7 +400,10 @@ void gfx_ctx_wl_update_title_common(void *data)
             if (wl->deco)
                zxdg_toplevel_decoration_v1_set_mode(wl->deco,
                      ZXDG_TOPLEVEL_DECORATION_V1_MODE_SERVER_SIDE);
-            xdg_toplevel_set_title(wl->xdg_toplevel, title);
+            if (wl->xdg_toplevel)
+               xdg_toplevel_set_title(wl->xdg_toplevel, title);
+            if (wl->shell_surf)
+                 wl_shell_surface_set_title(wl->shell_surf, title);
          }
       }
    }
@@ -674,7 +683,7 @@ bool gfx_ctx_wl_init_common(
       goto error;
    }
 
-   if (!wl->xdg_shell)
+   if (!wl->shell && !wl->xdg_shell)
    {
       RARCH_ERR("[Wayland]: Failed to create shell.\n");
       goto error;
@@ -737,7 +746,7 @@ bool gfx_ctx_wl_init_common(
    }
    else
 #endif
-   {
+   if (wl->xdg_shell) {
       wl->xdg_surface = xdg_wm_base_get_xdg_surface(wl->xdg_shell, wl->surface);
       xdg_surface_add_listener(wl->xdg_surface, &xdg_surface_listener, wl);
 
@@ -757,10 +766,18 @@ bool gfx_ctx_wl_init_common(
 
       while (wl->configured)
          wl_display_dispatch(wl->input.dpy);
-   }
 
-   wl_display_roundtrip(wl->input.dpy);
-   xdg_wm_base_add_listener(wl->xdg_shell, &xdg_shell_listener, NULL);
+      wl_display_roundtrip(wl->input.dpy);
+      xdg_wm_base_add_listener(wl->xdg_shell, &xdg_shell_listener, NULL);
+   }
+   else if (wl->shell)
+   {
+      wl->shell_surf = wl_shell_get_shell_surface(wl->shell, wl->surface);
+      wl_shell_surface_add_listener(wl->shell_surf, &shell_surface_listener, wl);
+      wl_shell_surface_set_toplevel(wl->shell_surf);
+      wl_shell_surface_set_class(wl->shell_surf, APP_ID);
+      wl_shell_surface_set_title(wl->shell_surf, WINDOW_TITLE);
+   }
 
    /* Bind SHM based wl_buffer to wl_surface until the vulkan surface is ready.
     * This shows the window which assigns us a display (wl_output)
@@ -892,8 +909,13 @@ bool gfx_ctx_wl_set_video_mode_common_fullscreen(gfx_ctx_wayland_data_t *wl,
          wl->libdecor_frame_set_fullscreen(wl->libdecor_frame, output);
       else
 #endif
-      {
+      if (wl->xdg_toplevel) {
          xdg_toplevel_set_fullscreen(wl->xdg_toplevel, output);
+      }
+      else if (wl->shell)
+      {
+         wl_shell_surface_set_fullscreen(wl->shell_surf,
+            WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT, 0, NULL);
       }
    }
 

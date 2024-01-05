@@ -259,8 +259,11 @@ static void wl_pointer_handle_button(void *data,
                    wl->libdecor_frame_move(wl->libdecor_frame, wl->seat, serial);
                else
 #endif
-               {
+               if (wl->xdg_toplevel) {
                   xdg_toplevel_move(wl->xdg_toplevel, wl->seat, serial);
+               }
+               else if (wl->shell) {
+                  wl_shell_surface_move(wl->shell_surf, wl->seat, serial);
                }
             }
             break;
@@ -498,11 +501,14 @@ static void wl_seat_handle_capabilities(void *data,
    {
       wl->wl_pointer = wl_seat_get_pointer(seat);
       wl_pointer_add_listener(wl->wl_pointer, &pointer_listener, wl);
-      wl->wl_relative_pointer =
-         zwp_relative_pointer_manager_v1_get_relative_pointer(
-            wl->relative_pointer_manager, wl->wl_pointer);
-      zwp_relative_pointer_v1_add_listener(wl->wl_relative_pointer,
-         &relative_pointer_listener, wl);
+      if (wl->relative_pointer_manager)
+      {
+         wl->wl_relative_pointer =
+            zwp_relative_pointer_manager_v1_get_relative_pointer(
+               wl->relative_pointer_manager, wl->wl_pointer);
+         zwp_relative_pointer_v1_add_listener(wl->wl_relative_pointer,
+            &relative_pointer_listener, wl);
+      }
    }
    else if (!(caps & WL_SEAT_CAPABILITY_POINTER) && wl->wl_pointer)
    {
@@ -629,6 +635,37 @@ static void wl_surface_leave(void *data, struct wl_surface *wl_surface, struct w
 }
 
 /* Shell surface callbacks. */
+static void shell_surface_handle_ping(void *data,
+      struct wl_shell_surface *shell_surface,
+      uint32_t serial)
+{
+   (void)data;
+   wl_shell_surface_pong(shell_surface, serial);
+}
+
+static void shell_surface_handle_configure(void *data,
+      struct wl_shell_surface *shell_surface,
+      uint32_t edges, int32_t width, int32_t height)
+{
+   gfx_ctx_wayland_data_t *wl = (gfx_ctx_wayland_data_t*)data;
+
+   (void)shell_surface;
+   (void)edges;
+
+   wl->width  = width;
+   wl->height = height;
+
+   RARCH_LOG("[Wayland]: Surface configure: %u x %u.\n",
+         wl->width, wl->height);
+}
+
+static void shell_surface_handle_popup_done(void *data,
+      struct wl_shell_surface *shell_surface)
+{
+   (void)data;
+   (void)shell_surface;
+}
+
 static void xdg_shell_ping(
       void *data, struct xdg_wm_base *shell, uint32_t serial)
 {
@@ -730,6 +767,9 @@ static void wl_registry_handle_global(void *data, struct wl_registry *reg,
       wl_list_insert(&wl->all_outputs, &od->link);
       wl_display_roundtrip(wl->input.dpy);
    }
+   else if (string_is_equal(interface, wl_shell_interface.name))
+      wl->shell = (struct wl_shell*)
+         wl_registry_bind(reg, id, &wl_shell_interface, MIN(version, 1));
    else if (string_is_equal(interface, xdg_wm_base_interface.name))
       wl->xdg_shell = (struct xdg_wm_base*)
          wl_registry_bind(reg, id, &xdg_wm_base_interface, MIN(version, 3));
@@ -907,7 +947,7 @@ static void wl_data_device_handle_enter(void *data,
 {
    data_offer_ctx *offer_data;
    gfx_ctx_wayland_data_t *wl = (gfx_ctx_wayland_data_t*)data;
-   enum wl_data_device_manager_dnd_action dnd_action = 
+   enum wl_data_device_manager_dnd_action dnd_action =
       WL_DATA_DEVICE_MANAGER_DND_ACTION_NONE;
 
    if (!offer)
@@ -919,11 +959,11 @@ static void wl_data_device_handle_enter(void *data,
    wl_data_offer_accept(offer, serial,
       offer_data->is_file_mime_type ? FILE_MIME : NULL);
 
-   if (     offer_data->is_file_mime_type 
+   if (     offer_data->is_file_mime_type
          && offer_data->supported_actions & DND_ACTION)
       dnd_action = DND_ACTION;
 
-   if (     wl_data_offer_get_version(offer) 
+   if (     wl_data_offer_get_version(offer)
          >= WL_DATA_OFFER_SET_ACTIONS_SINCE_VERSION)
      wl_data_offer_set_actions(offer, dnd_action, dnd_action);
 }
@@ -1039,6 +1079,12 @@ const struct wl_output_listener output_listener = {
    wl_output_handle_mode,
    wl_output_handle_done,
    wl_output_handle_scale,
+};
+
+const struct wl_shell_surface_listener shell_surface_listener = {
+   shell_surface_handle_ping,
+   shell_surface_handle_configure,
+   shell_surface_handle_popup_done,
 };
 
 const struct xdg_wm_base_listener xdg_shell_listener = {

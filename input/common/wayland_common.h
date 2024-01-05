@@ -151,6 +151,8 @@ typedef struct gfx_ctx_wayland_data
    struct wp_viewporter *viewporter;
    struct wp_fractional_scale_manager_v1 *fractional_scale_manager;
    struct wl_surface *surface;
+   struct wl_shell_surface *shell_surf;
+   struct wl_shell *shell;
    struct xdg_surface *xdg_surface;
    struct wp_viewport *viewport;
    struct wp_fractional_scale_v1 *fractional_scale;
@@ -252,6 +254,8 @@ extern const struct wl_seat_listener seat_listener;
 extern const struct wp_fractional_scale_v1_listener wp_fractional_scale_v1_listener;
 
 extern const struct wl_surface_listener wl_surface_listener;
+
+extern const struct wl_shell_surface_listener shell_surface_listener;
 
 extern const struct xdg_wm_base_listener xdg_shell_listener;
 
