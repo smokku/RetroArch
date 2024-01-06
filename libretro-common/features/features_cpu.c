@@ -897,14 +897,17 @@ end:
 
       while (filestream_gets(fp, line, sizeof(line)))
       {
-         if (strncmp(line, "model name", 10))
+         if (strncmp(line, "model name", 10) && strncmp(line, "Processor", 9))
             continue;
 
-         if ((model_name = strstr(line + 10, ": ")))
+         if ((model_name = strstr(line, ": ")))
          {
             model_name += 2;
             strncpy(name, model_name, len);
             name[len - 1] = '\0';
+            char *nl = strchr(name, '\n');
+            if (nl)
+              *nl = '\0';
          }
 
          break;
