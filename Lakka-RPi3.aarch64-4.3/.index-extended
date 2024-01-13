@@ -17,10 +17,13 @@
 2024-01-07 762ff4c8 dinothawr_libretro.so.zip
 2024-01-07 f8cf151f dosbox_libretro.so.zip
 2024-01-07 a8dbbcd1 dosbox_pure_libretro.so.zip
+2024-01-13 f5833ab0 dosbox_svn_libretro.so.zip
+2024-01-13 34631246 duckstation_libretro.so.zip
 2024-01-07 21598dcc ecwolf_libretro.so.zip
 2024-01-07 06797144 emux_sms_libretro.so.zip
 2024-01-07 2c22da0c fbneo_libretro.so.zip
 2024-01-07 bff767cd fceumm_libretro.so.zip
+2024-01-13 976d88ea flycast_libretro.so.zip
 2024-01-07 0d87e0cb fmsx_libretro.so.zip
 2024-01-07 809c61e5 freechaf_libretro.so.zip
 2024-01-07 d580440f freeintv_libretro.so.zip
@@ -38,6 +41,7 @@
 2024-01-07 a2b52da7 higan_sfc_balanced_libretro.so.zip
 2024-01-07 c0ab07d9 higan_sfc_libretro.so.zip
 2024-01-07 322e1158 jumpnbump_libretro.so.zip
+2024-01-13 e8c6ab10 kronos_libretro.so.zip
 2024-01-07 af676324 lowresnx_libretro.so.zip
 2024-01-07 ebab05f4 lutro_libretro.so.zip
 2024-01-07 ca880670 mame2003_plus_libretro.so.zip
@@ -49,6 +53,7 @@
 2024-01-07 4f4c63f1 mednafen_pce_libretro.so.zip
 2024-01-07 6062f1c7 mednafen_pcfx_libretro.so.zip
 2024-01-07 e59b3f37 mednafen_psx_libretro.so.zip
+2024-01-13 aaf802f4 mednafen_supafaust_libretro.so.zip
 2024-01-07 be2a1a00 mednafen_supergrafx_libretro.so.zip
 2024-01-07 da0edefd mednafen_vb_libretro.so.zip
 2024-01-07 022afb40 mednafen_wswan_libretro.so.zip
@@ -56,6 +61,7 @@
 2024-01-07 154261a2 mesen-s_libretro.so.zip
 2024-01-07 8c4d8efb mgba_libretro.so.zip
 2024-01-07 5f84962d mojozork_libretro.so.zip
+2024-01-13 da012e8e moonlight_libretro.so.zip
 2024-01-07 84d0913d mrboom_libretro.so.zip
 2024-01-07 88dacbf3 mu_libretro.so.zip
 2024-01-07 ca28894a mupen64plus_next_libretro.so.zip
@@ -69,9 +75,11 @@
 2024-01-07 fe60c140 parallel_n64_libretro.so.zip
 2024-01-07 c38c2ba6 pcsx_rearmed_libretro.so.zip
 2024-01-07 be8e15f6 picodrive_libretro.so.zip
+2024-01-13 215fe60e play_libretro.so.zip
 2024-01-07 de47dbaa pocketcdg_libretro.so.zip
 2024-01-07 2771d738 pokemini_libretro.so.zip
 2024-01-07 b58da02d potator_libretro.so.zip
+2024-01-13 eace0cf3 ppsspp_libretro.so.zip
 2024-01-07 32114cc4 prboom_libretro.so.zip
 2024-01-07 0b90ac0c prosystem_libretro.so.zip
 2024-01-07 3f78099d puae2021_libretro.so.zip
